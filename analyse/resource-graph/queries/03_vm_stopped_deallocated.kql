@@ -1,0 +1,8 @@
+// Q3 – Abschaltungs-Kandidaten: gestoppte bzw. deallokierte VMs
+// Achtung: "PowerState/stopped" (nicht deallokiert) verrechnet weiterhin Compute-Kosten!
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| extend powerState = tostring(properties.extended.instanceView.powerState.code)
+| where powerState in~ ('PowerState/stopped', 'PowerState/deallocated')
+| project resourceId = tolower(id), name, resourceGroup, subscriptionId, location,
+          vmSize = tostring(properties.hardwareProfile.vmSize), powerState

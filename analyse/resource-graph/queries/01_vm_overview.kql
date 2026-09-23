@@ -1,0 +1,5 @@
+// Q1 – Übersicht: Anzahl VMs pro Subscription und Region
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| summarize vmCount = count() by subscriptionId, location
+| order by vmCount desc

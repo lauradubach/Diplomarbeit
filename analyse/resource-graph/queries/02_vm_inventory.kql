@@ -1,0 +1,14 @@
+// Q2 – VM-Inventar (Switzerland North) mit den Feldern für Right-Sizing / Reservierung / Abschaltung
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| where location =~ '{{REGION}}'
+| extend vmSize      = tostring(properties.hardwareProfile.vmSize),
+         osType      = tostring(properties.storageProfile.osDisk.osType),
+         osDiskId    = tolower(tostring(properties.storageProfile.osDisk.managedDisk.id)),
+         dataDisks   = array_length(properties.storageProfile.dataDisks),
+         powerState  = tostring(properties.extended.instanceView.powerState.code),
+         licenseType = tostring(properties.licenseType),
+         priority    = tostring(properties.priority),
+         timeCreated = todatetime(properties.timeCreated)
+| project resourceId = tolower(id), name, resourceGroup, subscriptionId, location,
+          vmSize, osType, osDiskId, dataDisks, powerState, licenseType, priority, timeCreated, tags

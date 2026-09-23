@@ -1,0 +1,7 @@
+// Q5 – Öffentliche IP-Adressen ohne Zuordnung (Static Standard-IPs kosten auch ungenutzt)
+Resources
+| where type =~ 'microsoft.network/publicipaddresses'
+| where isnull(properties.ipConfiguration) and isnull(properties.natGateway)
+| project resourceId = tolower(id), name, resourceGroup, subscriptionId, location,
+          skuName = tostring(sku.name),
+          allocation = tostring(properties.publicIPAllocationMethod), tags

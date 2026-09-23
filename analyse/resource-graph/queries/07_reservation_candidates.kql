@@ -1,0 +1,10 @@
+// Q7 – Reservierungs-Kandidaten: laufende VMs gruppiert nach Grösse und Region
+// (Reservierungen gelten pro VM-Serie/-Grösse und Region)
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| extend vmSize = tostring(properties.hardwareProfile.vmSize),
+         powerState = tostring(properties.extended.instanceView.powerState.code),
+         priority = tostring(properties.priority)
+| where powerState =~ 'PowerState/running' and priority !~ 'Spot'
+| summarize runningVms = count() by vmSize, location, subscriptionId
+| order by runningVms desc

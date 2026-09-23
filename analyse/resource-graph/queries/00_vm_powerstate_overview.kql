@@ -1,0 +1,6 @@
+// Q0 – Wo gibt es VMs? Anzahl pro Subscription, Region und Power State (ohne Regionsfilter)
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| extend powerState = tostring(properties.extended.instanceView.powerState.code)
+| summarize vmCount = count() by subscriptionId, location, powerState
+| order by vmCount desc

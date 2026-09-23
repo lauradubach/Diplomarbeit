@@ -1,0 +1,13 @@
+// Q8 – VM inkl. OS-Disk-SKU (Join innerhalb Resource Graph, direkt assoziierte Komponenten gem. Scope 1.3)
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| where location =~ '{{REGION}}'
+| extend osDiskId = tolower(tostring(properties.storageProfile.osDisk.managedDisk.id)),
+         vmSize = tostring(properties.hardwareProfile.vmSize)
+| project vmId = tolower(id), vmName = name, vmSize, osDiskId
+| join kind=leftouter (
+    Resources
+    | where type =~ 'microsoft.compute/disks'
+    | project osDiskId = tolower(id), diskSku = tostring(sku.name), diskSizeGB = toint(properties.diskSizeGB)
+  ) on osDiskId
+| project vmId, vmName, vmSize, diskSku, diskSizeGB

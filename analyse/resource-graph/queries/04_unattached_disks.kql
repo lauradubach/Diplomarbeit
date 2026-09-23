@@ -1,0 +1,7 @@
+// Q4 – Nicht angehängte Managed Disks (verursachen Speicherkosten ohne Nutzen)
+Resources
+| where type =~ 'microsoft.compute/disks'
+| where tostring(properties.diskState) =~ 'Unattached'
+| project resourceId = tolower(id), name, resourceGroup, subscriptionId, location,
+          skuName = tostring(sku.name), diskSizeGB = toint(properties.diskSizeGB),
+          timeCreated = todatetime(properties.timeCreated), tags

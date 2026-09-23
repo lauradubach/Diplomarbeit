@@ -1,0 +1,5 @@
+// Q6 – Netzwerkkarten ohne VM (Aufräum-Indikator, i.d.R. kostenneutral)
+Resources
+| where type =~ 'microsoft.network/networkinterfaces'
+| where isnull(properties.virtualMachine) and isnull(properties.privateEndpoint)
+| project resourceId = tolower(id), name, resourceGroup, subscriptionId, location
