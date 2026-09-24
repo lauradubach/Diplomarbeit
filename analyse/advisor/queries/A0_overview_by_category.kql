@@ -1,0 +1,7 @@
+// A0 – Übersicht: Anzahl Advisor-Empfehlungen pro Kategorie und Impact (tenant-weit)
+AdvisorResources
+| where type =~ 'microsoft.advisor/recommendations'
+| extend category = tostring(properties.category),
+         impact   = tostring(properties.impact)
+| summarize anzahl = count() by category, impact
+| order by category asc, anzahl desc

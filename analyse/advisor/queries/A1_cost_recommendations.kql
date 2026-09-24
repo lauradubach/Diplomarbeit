@@ -1,0 +1,21 @@
+// A1 – Alle Kosten-Empfehlungen im Detail (inkl. Einsparung und SKU-Vorschlag)
+// extendedProperties wird zusätzlich komplett ausgegeben, um die verfügbaren Felder zu sehen
+AdvisorResources
+| where type =~ 'microsoft.advisor/recommendations'
+| where tostring(properties.category) =~ 'Cost'
+| extend resourceId          = tolower(tostring(properties.resourceMetadata.resourceId)),
+         impactedType        = tostring(properties.impactedField),
+         impactedName        = tostring(properties.impactedValue),
+         impact              = tostring(properties.impact),
+         problem             = tostring(properties.shortDescription.problem),
+         solution            = tostring(properties.shortDescription.solution),
+         recommendationType  = tostring(properties.recommendationTypeId),
+         savingsAmount       = todouble(properties.extendedProperties.savingsAmount),
+         annualSavingsAmount = todouble(properties.extendedProperties.annualSavingsAmount),
+         savingsCurrency     = tostring(properties.extendedProperties.savingsCurrency),
+         currentSku          = tostring(properties.extendedProperties.currentSku),
+         targetSku           = tostring(properties.extendedProperties.targetSku),
+         lastUpdated         = todatetime(properties.lastUpdated)
+| project resourceId, impactedType, impactedName, impact, problem, solution, recommendationType,
+          savingsAmount, annualSavingsAmount, savingsCurrency, currentSku, targetSku, lastUpdated,
+          extendedProperties = properties.extendedProperties

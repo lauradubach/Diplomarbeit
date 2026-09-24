@@ -1,0 +1,9 @@
+// A2 – Kosten-Empfehlungen gruppiert nach Art (welche Empfehlungstypen liefert Advisor überhaupt?)
+AdvisorResources
+| where type =~ 'microsoft.advisor/recommendations'
+| where tostring(properties.category) =~ 'Cost'
+| extend problem = tostring(properties.shortDescription.problem),
+         impactedType = tostring(properties.impactedField),
+         annualSavings = todouble(properties.extendedProperties.annualSavingsAmount)
+| summarize anzahl = count(), jahresEinsparung = sum(annualSavings) by problem, impactedType
+| order by anzahl desc

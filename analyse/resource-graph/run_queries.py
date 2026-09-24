@@ -15,6 +15,7 @@ Aufruf:
     python run_queries.py                                  # alle zugänglichen Subscriptions
     python run_queries.py --region westeurope              # andere Region
     python run_queries.py --region all                     # ohne Regionsfilter
+    python run_queries.py --query-dir ../advisor/queries   # andere Abfragen (z.B. DIP-8 Advisor)
 """
 
 import argparse
@@ -30,8 +31,7 @@ API_VERSION = "2024-04-01"
 PAGE_SIZE = 1000  # Maximum pro Antwort laut API ($top 1..1000)
 
 BASE_DIR = Path(__file__).parent
-QUERY_DIR = BASE_DIR / "queries"
-OUTPUT_DIR = BASE_DIR / "output"
+DEFAULT_QUERY_DIR = BASE_DIR / "queries"
 
 
 def get_token() -> str:
@@ -102,12 +102,16 @@ def main() -> None:
     parser.add_argument("--region", default="switzerlandnorth",
                         help="Region für regional gefilterte Abfragen, z.B. westeurope; 'all' = kein Filter")
     parser.add_argument("--only", help="Nur eine Abfrage ausführen (Dateiname ohne .kql)")
+    parser.add_argument("--query-dir", default=str(DEFAULT_QUERY_DIR),
+                        help="Ordner mit .kql-Dateien; Resultate landen im Nachbarordner output/")
     args = parser.parse_args()
 
-    OUTPUT_DIR.mkdir(exist_ok=True)
+    query_dir = Path(args.query_dir).resolve()
+    output_dir = query_dir.parent / "output"
+    output_dir.mkdir(exist_ok=True)
     token = get_token()
 
-    files = sorted(QUERY_DIR.glob("*.kql"))
+    files = sorted(query_dir.glob("*.kql"))
     if args.only:
         files = [f for f in files if f.stem == args.only]
 
@@ -116,7 +120,7 @@ def main() -> None:
         print(f"\n▶ {file.stem}")
         query = apply_region(file.read_text(encoding="utf-8"), args.region)
         result = run_query(token, query, args.subscriptions)
-        out_file = OUTPUT_DIR / f"{file.stem}.json"
+        out_file = output_dir / f"{file.stem}.json"
         out_file.write_text(json.dumps(result, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
         summary.append((file.stem, result["totalRecords"]))
         print(f"  → {result['totalRecords']} Datensätze gespeichert in {out_file.name}")

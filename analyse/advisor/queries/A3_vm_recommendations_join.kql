@@ -1,0 +1,17 @@
+// A3 – Welche der VMs (Region siehe --region) haben Advisor-Empfehlungen – egal welcher Kategorie?
+// Verknüpfung über die normalisierte Ressourcen-ID (wie bei Resource Graph / Cost Management)
+Resources
+| where type =~ 'microsoft.compute/virtualmachines'
+| where location =~ '{{REGION}}'
+| project resourceId = tolower(id), vmName = name,
+          vmSize = tostring(properties.hardwareProfile.vmSize),
+          powerState = tostring(properties.extended.instanceView.powerState.code)
+| join kind=leftouter (
+    AdvisorResources
+    | where type =~ 'microsoft.advisor/recommendations'
+    | project resourceId = tolower(tostring(properties.resourceMetadata.resourceId)),
+              category = tostring(properties.category),
+              problem  = tostring(properties.shortDescription.problem)
+  ) on resourceId
+| project vmName, vmSize, powerState, category, problem
+| order by vmName asc
